@@ -14,7 +14,7 @@ class TLC5947 : public Component {
   void set_data_pin(GPIOPin *data_pin) { data_pin_ = data_pin; }
   void set_clock_pin(GPIOPin *clock_pin) { clock_pin_ = clock_pin; }
   void set_latch_pin(GPIOPin *latch_pin) {latch_pin_ = latch_pin; }
-  void set_num_channels(uint16_t num_channels) { num_channels_ = num_channels; }
+  void set_num_channels() { num_channels_ = num_chips_*2; }
   void set_num_chips(uint16_t num_chips) { num_chips_ = num_chips; }
 
   void setup() override;
@@ -50,13 +50,14 @@ class TLC5947 : public Component {
     this->pwm_amounts_[index] = value;
   }
   void write_bit_(bool value) {
+    this->clock_pin_->digital_write(false);
     this->data_pin_->digital_write(value);
     this->clock_pin_->digital_write(true);
-    this->clock_pin_->digital_write(false);
   }
   //mask byte to 
   void write_byte_(uint16_t data) {
-    for (uint16_t mask = 100000000000; mask; mask >>= 1) {
+    this->latch_pin_->digital_write(false);
+    for (long long mask = 100000000000; mask; mask >>= 1) {
       this->write_bit_(data & mask);
     }
   }

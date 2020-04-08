@@ -13,6 +13,13 @@ void TLC5947::setup() {
   this->clock_pin_->setup();
   this->clock_pin_->digital_write(false);
   this->pwm_amounts_.resize(this->num_channels_, 0);
+
+  //reset everything to off
+for(uint8_t index = 0; index < this->num_chips_; index++){
+  // send blank bits to reset chip 287 bits
+  this->rest_reg();
+}
+
 }
 void TLC5947::dump_config() {
   ESP_LOGCONFIG(TAG, "TLC5947:");
@@ -25,24 +32,21 @@ void TLC5947::dump_config() {
 void TLC5947::loop() {
   if (!this->update_)
     return;
-  // send blank bits to reset chip 287 bits
-  this->rest_reg();
+  
 
-  // send 25 bits (1 start bit plus 24 data bits) for each chip
+  //set latch pin low
+  this->latch_pin_->digital_write(false);
+  // send 12bit amount for each channel
   for (uint8_t index = 0; index < this->num_channels_; index++) {
     // send a start bit initially and after every 3 channels
-    if (index % 3 == 0) {
-      this->write_bit_(true);
-    }
-
     this->write_byte_(this->pwm_amounts_[index]);
   }
+  //set clock_pin low
+  this->clock_pin_->digital_write(false);
 
-  // send a blank 25 bits to signal the end
-  this->write_bit_(false);
-  this->write_byte_(0);
-  this->write_byte_(0);
-  this->write_byte_(0);
+  //write data to latch reg from shift reg.
+  this->latch_pin_->digital_write(true);
+  this->latch_pin_->digital_write(false);
 
   this->update_ = false;
 }
