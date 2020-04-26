@@ -50,14 +50,14 @@ class TLC5947 : public Component {
 
  protected:
   void set_channel_value_(uint16_t channel, uint16_t value) {
-    uint16_t index = channel - 1;
+    uint16_t index =  channel - 1;
     if (this->pwm_amounts_[index] != value) {
       this->update_ = true;
     }
     this->pwm_amounts_[index] = value;
   }
   void write_bit_(bool value) {
-    ESP_LOGD("Debug:", "write bit: %i", value);
+    // ESP_LOGD("Debug:", "write bit: %i", value);
     this->clock_pin_->digital_write(false);
     this->data_pin_->digital_write(value);
     this->clock_pin_->digital_write(true);
@@ -66,7 +66,7 @@ class TLC5947 : public Component {
   void write_byte_(uint16_t data) {
     ESP_LOGD("Debug:", "write byte: %i", data);
     //this->latch_pin_->digital_write(false);
-    for (uint16_t mask = 0x100; mask; mask >>= 1) {
+    for (uint16_t mask = 0x800; mask; mask >>= 1) {
       this->write_bit_(data & mask);
     }
   }

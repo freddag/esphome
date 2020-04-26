@@ -46,9 +46,10 @@ void TLC5947::write() {
 
    // send 12bit amount for each channel
   for (uint8_t index = 0; index < this->num_channels_; index++) {
+    uint16_t x = num_channels_ - 1;
     ESP_LOGD("Debug:","Index: %i",index);
     ESP_LOGD("Debug:","pwm: %i", this->pwm_amounts_[index]);
-    this->write_byte_(this->pwm_amounts_[index]);
+    this->write_byte_(this->pwm_amounts_[x - index]);
   }
 
   //set clock_pin low
